@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="bg-light navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand" href="#">API Website</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Home</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="mt-5 container">
+        <h1 class="mb-4">Welcome to the API Website</h1>
+
+        <!-- Section for retrieving all items -->
+        <div class="mb-4 card">
+            <div class="card-header">
+                Get All Items
+            </div>
+            <div class="card-body">
+                <button type="button" class="mb-3 btn btn-success" onclick="getAllItems()">Get All Items</button>
+                <table class="table-bordered table" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Items will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Section for adding items -->
+        <div class="mb-4 card">
+            <div class="card-header">
+                Add Item
+            </div>
+            <div class="card-body">
+                <form id="addItemForm">
+                    <div class="form-group">
+                        <label for="itemName">Item Name</label>
+                        <input type="text" class="form-control" id="itemName" placeholder="Enter item name">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemDescription">Item Description</label>
+                        <input type="text" class="form-control" id="itemDescription" placeholder="Enter item description">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="addItem()">Add Item</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Section for updating items -->
+        <div class="mb-4 card">
+            <div class="card-header">
+                Update Item
+            </div>
+            <div class="card-body">
+                <form id="updateItemForm">
+                    <div class="form-group">
+                        <label for="updateItemId">Item ID</label>
+                        <input type="text" class="form-control" id="updateItemId" placeholder="Enter item ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="updateItemName">Item Name</label>
+                        <input type="text" class="form-control" id="updateItemName" placeholder="Enter new item name">
+                    </div>
+                    <div class="form-group">
+                        <label for="updateItemDescription">Item Description</label>
+                        <input type="text" class="form-control" id="updateItemDescription" placeholder="Enter new item description">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="updateItem()">Update Item</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Section for deleting items -->
+        <div class="mb-4 card">
+            <div class="card-header">
+                Delete Item
+            </div>
+            <div class="card-body">
+                <form id="deleteItemForm">
+                    <div class="form-group">
+                        <label for="deleteItemId">Item ID</label>
+                        <input type="text" class="form-control" id="deleteItemId" placeholder="Enter item ID">
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="deleteItem()">Delete Item</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        function getAllItems() {
+            fetch('/item/get')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('itemsTable').getElementsByTagName('tbody')[0];
+                    tableBody.innerHTML = ''; // Clear existing table data
+                    data.forEach(item => {
+                        const row = tableBody.insertRow();
+                        row.insertCell(0).innerText = item.id;
+                        row.insertCell(1).innerText = item.name;
+                        row.insertCell(2).innerText = item.description;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function addItem() {
+            const name = document.getElementById('itemName').value;
+            const description = document.getElementById('itemDescription').value;
+            
+            fetch('/item/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: name, descr: description }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.msg);
+                getAllItems(); // Refresh the items list
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function updateItem() {
+            const id = document.getElementById('updateItemId').value;
+            const name = document.getElementById('updateItemName').value;
+            const description = document.getElementById('updateItemDescription').value;
+            
+            fetch('/item/update/json', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: id, name: name, descr: description }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.msg);
+                getAllItems(); // Refresh the items list
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function deleteItem() {
+            const id = document.getElementById('deleteItemId').value;
+            
+            fetch(`/item/delete/${id}`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.status === 204) {
+                    alert('Deletion Successful');
+                    getAllItems(); // Refresh the items list
+                } else {
+                    return response.json();
+                }
+            })
+            .then(data => {
+                if (data) {
+                    alert(data.msg);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
